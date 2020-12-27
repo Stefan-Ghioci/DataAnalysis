@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import TextField from '@material-ui/core/TextField';
 import SearchIcon from '@material-ui/icons/Search';
@@ -13,24 +13,36 @@ import {
   makeStyles,
   ThemeProvider,
 } from '@material-ui/core/styles';
+import Typography from '@material-ui/core/Typography';
+import { searchMovies } from './movie_repository';
+import { Movie } from './types';
 
 const useStyles = makeStyles((theme) => ({
-  search: {
-    margin: theme.spacing(2),
+  root: {
+    '& > *': {
+      margin: theme.spacing(2),
+    },
   },
 }));
 
 const Main = () => {
   const classes = useStyles();
   const [searchText, setSearchText] = useState('');
+  const [foundMovies, setFoundMovies] = useState(new Set<Movie>());
 
   const handleSearchTextChanged = (event: { target: { value: string } }) => {
     const newValue = event.target.value;
     setSearchText(newValue);
   };
+
+  useEffect(() => {
+    if (searchText.length >= 3) setFoundMovies(searchMovies(searchText));
+    else setFoundMovies(new Set<Movie>());
+  }, [searchText]);
+
   return (
-    <Container maxWidth="sm">
-      <Card className={classes.search}>
+    <Container maxWidth="sm" className={classes.root}>
+      <Card>
         <CardHeader title="Select a movie, find similar ones" />
         <CardActions>
           <TextField
@@ -48,6 +60,19 @@ const Main = () => {
           />
         </CardActions>
       </Card>
+      <Typography variant="h6">
+        {/* eslint-disable-next-line no-nested-ternary */}
+        {foundMovies.size !== 0
+          ? 'Found matches'
+          : searchText.length >= 3
+          ? 'No matches found'
+          : ''}
+      </Typography>
+      {Array.from(foundMovies).map((movie) => (
+        <Card key={movie.id}>
+          <CardHeader title={movie.title} />
+        </Card>
+      ))}
     </Container>
   );
 };
