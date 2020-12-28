@@ -1,39 +1,17 @@
 /* eslint-disable no-console */
 export default abstract class ClusteringAlgorithm<E> {
-  protected distanceMatrix: number[][];
-
   protected dataset: E[];
 
   constructor(dataset: E[]) {
     this.dataset = dataset;
-    this.distanceMatrix = [];
-
-    // initialize dataset-length squared sized distance matrix
-    for (let i = 0; i < dataset.length; i += 1) {
-      const row = [];
-      for (let j = 0; j < dataset.length; j += 1) row.push(0);
-      this.distanceMatrix.push(row);
-    }
-
-    // fill in with distance for every pair of elements in dataset
-    for (let i = 0; i < dataset.length; i += 1)
-      for (let j = 0; j < dataset.length; j += 1)
-        if (i !== j) {
-          const distance = this.computeDistance(dataset[i], dataset[j]);
-          this.distanceMatrix[i][j] = distance;
-          this.distanceMatrix[j][i] = distance;
-        }
   }
 
   run(): E[][][] {
     const dendogram = [];
     let clusters = this.dataset.map((element) => [element]);
-
-    dendogram.push(JSON.parse(JSON.stringify(clusters)));
     let clusterCount = this.dataset.length;
 
     console.log('Clusters initialized. Initial count: %d', clusterCount);
-
     do {
       // find closest pair of clusters
       let minDistanceCluster1 = clusters[0];
@@ -65,7 +43,7 @@ export default abstract class ClusteringAlgorithm<E> {
       );
 
       // update dendogram and cluster count
-      dendogram.push(JSON.parse(JSON.stringify(clusters)));
+      dendogram.push([minDistanceCluster1, minDistanceCluster2]);
       clusterCount -= 1;
 
       console.log('Clusters merged. New cluster count: %d', clusterCount);
@@ -74,7 +52,19 @@ export default abstract class ClusteringAlgorithm<E> {
     return dendogram;
   }
 
-  abstract computeClusterDistance(cluster1: E[], cluster2: E[]): number;
+  computeClusterDistance(cluster1: E[], cluster2: E[]): number {
+    let maxDistance = this.computeDistance(cluster1[0], cluster2[0]);
+
+    for (let i = 0; i < cluster1.length; i += 1)
+      for (let j = 0; j < cluster2.length; j += 1) {
+        const distance = this.computeDistance(cluster1[i], cluster2[j]);
+        if (distance > maxDistance) {
+          maxDistance = distance;
+        }
+      }
+
+    return maxDistance;
+  }
 
   abstract computeDistance(element1: E, element2: E): number;
 }
