@@ -16,6 +16,7 @@ import {
 import Typography from '@material-ui/core/Typography';
 import { searchMovies } from './movie_repository';
 import { Movie } from './types';
+import MovieCard from './MovieCard';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -33,6 +34,10 @@ const Main = () => {
   const handleSearchTextChanged = (event: { target: { value: string } }) => {
     const newValue = event.target.value;
     setSearchText(newValue);
+  };
+
+  const handleFindSimilarMovie = (id: number) => {
+    // TODO: implement after clustering done
   };
 
   useEffect(() => {
@@ -69,9 +74,11 @@ const Main = () => {
           : ''}
       </Typography>
       {Array.from(foundMovies).map((movie) => (
-        <Card key={movie.id}>
-          <CardHeader title={movie.title} />
-        </Card>
+        <MovieCard
+          key={movie.id}
+          movie={movie}
+          onFindSimilarMovie={handleFindSimilarMovie}
+        />
       ))}
     </Container>
   );
